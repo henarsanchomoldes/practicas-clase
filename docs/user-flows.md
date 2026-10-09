@@ -1,50 +1,9 @@
-# Flujos de usuario
+# Flujos
 
-<!-- Documentación detallada de los flujos de usuario principales.
-     El PRD los describe narrativamente; este archivo entra en detalle con diagramas y estados.
-     Actualizar cuando cambie un flujo existente o se añada uno nuevo. -->
+Importar: Facturas → PDF → lectura local y vista original → GPT opcional con sesión nube → revisión → validar importes y duplicados → confirmar. Los campos ausentes se completan manualmente. Un error conserva el documento para reintentar. Interfaz limitada a 10 MB y 20 páginas.
 
----
+Cobrar: factura/alerta → Cobros → fecha e importe → registrar → recalcular saldo. Pago parcial mantiene alerta si queda vencido; pago completo la retira. Los cobros erróneos y marcas históricas pueden corregirse con confirmación.
 
-## Convenciones de este documento
+Migrar: exportar JSON en el gestor original → importar en la nueva web → iniciar sesión → importar copia a cuenta vacía con confirmación. No sobrescribir una cuenta existente. Cerrar sesión vuelve a la copia local.
 
-<!-- Los flujos se documentan con:
-     1. Descripción narrativa (qué hace el usuario, qué ve)
-     2. Diagrama de flujo en Mermaid (estados y transiciones)
-     3. Estados de error y casos edge
-     
-     Cada flujo tiene un ID para poder referenciarlo desde el PRD o desde el código. -->
-
----
-
-## [FLOW-01] — Nombre del flujo
-
-<!-- Ejemplo: Registro y onboarding -->
-
-**Actor:** <!-- Quién ejecuta el flujo -->
-**Trigger:** <!-- Qué lo inicia -->
-**Resultado esperado:** <!-- Qué ha conseguido el usuario al terminar -->
-
-### Pasos
-
-<!-- Descripción paso a paso desde la perspectiva del usuario. -->
-
-1. <!-- ... -->
-
-### Diagrama
-
-```mermaid
-flowchart TD
-  A[Inicio] --> B[Paso 1]
-  B --> C{Decisión}
-  C -->|Opción A| D[Resultado A]
-  C -->|Opción B| E[Resultado B]
-```
-
-### Casos de error
-
-<!-- Qué pasa si algo sale mal en cada paso. Cómo se comunica al usuario. -->
-
----
-
-<!-- Duplica la sección anterior para cada flujo adicional -->
+Fallos: aviso de cambios sin guardar, copia local conservada y opción de reintentar/exportar. Si cambió otra sesión, impedir sobrescritura y conservar copia antes de recargar.

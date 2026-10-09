@@ -30,9 +30,9 @@ Antes de hacer cualquier cosa, comprueba el estado del repositorio:
      Usuario objetivo: adultos 25-45 con colecciones físicas que quieren digitalizar su catálogo.
      Stack principal: Next.js + Supabase + Vercel." -->
 
-**Nombre:** <!-- nombre-del-proyecto -->
-**Descripción:** <!-- una frase -->
-**Estado actual:** <!-- En desarrollo / Beta / Producción -->
+**Nombre:** AliHen
+**Descripción:** Gestor de presupuestos, facturas emitidas y seguimiento de cobros, con revisión de PDF y conexión a Supabase ALIHEN.
+**Estado actual:** Desarrollo. Versión local validada; despliegue en ALIHEN y extracción GPT real pendientes.
 
 ---
 
@@ -56,11 +56,11 @@ Si un archivo de `docs/` no existe todavía, pregunta antes de asumir.
      - Pagos: Stripe
      - Email: Resend -->
 
-- Framework: <!-- ... -->
-- Base de datos: <!-- ... -->
-- Estilos: <!-- ... -->
-- Despliegue: <!-- ... -->
-- Otras integraciones: <!-- ... -->
+- Framework: JavaScript con módulos ES y Vite; Node.js ≥22.13.
+- Base de datos: Supabase PostgreSQL, Auth y Storage privado.
+- Estilos: CSS del gestor original, conservado.
+- Despliegue: Web estática desde dist/ y Supabase Edge Functions. Pendiente de activar.
+- Otras integraciones: OpenAI Responses API desde el servidor; PDF.js para lectura local.
 
 ---
 
@@ -92,10 +92,10 @@ Si un archivo de `docs/` no existe todavía, pregunta antes de asumir.
      - Comentarios en español. -->
 
 - Gestor de paquetes: pnpm v11. No usar npm ni yarn.
-- Idioma de comentarios y variables: <!-- español / inglés -->
-- Nombrado de componentes: <!-- PascalCase -->
-- Nombrado de archivos: <!-- kebab-case -->
-- <!-- Añade más reglas según el proyecto -->
+- Idioma: interfaz, comentarios y documentación en español; identificadores de código en inglés.
+- Mantener JavaScript y los formularios existentes; no migrar de framework sin necesidad.
+- Archivos nuevos en kebab-case.
+- Nunca exponer claves privadas en VITE_ ni en el navegador. No enviar correos de reclamación en esta fase.
 
 ---
 

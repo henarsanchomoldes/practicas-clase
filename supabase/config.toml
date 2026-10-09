@@ -1,0 +1,5 @@
+project_id = "alihen"
+
+[functions.extract-invoice]
+# La función verifica el usuario con Supabase Auth para admitir publishable keys.
+verify_jwt = false

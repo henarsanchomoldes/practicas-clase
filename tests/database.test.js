@@ -1,0 +1,78 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import { PGlite } from "@electric-sql/pglite";
+
+test("Migración: persistencia transaccional, RLS, pagos, duplicados y concurrencia", async () => {
+  const db = new PGlite();
+  try {
+    // Simula exclusivamente los esquemas de plataforma; ejecuta el SQL real de la aplicación.
+    await db.exec(`
+      create role anon; create role authenticated; create role service_role;
+      create schema auth; create schema storage;
+      create table auth.users(id uuid primary key);
+      create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
+      create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);
+      create table storage.objects(id uuid default gen_random_uuid(),bucket_id text,name text);
+      alter table storage.objects enable row level security;
+      create function storage.foldername(text) returns text[] language sql immutable as $$ select string_to_array($1,'/') $$;
+      grant usage on schema public, auth, storage to authenticated, anon, service_role;
+      grant select, insert, delete on storage.objects to authenticated;
+      insert into auth.users values ('11111111-1111-4111-8111-111111111111'),('22222222-2222-4222-8222-222222222222');
+    `);
+    await db.exec(await readFile(new URL("../supabase/migrations/20261009100000_alihen_collections.sql", import.meta.url), "utf8"));
+    await db.exec(`set role authenticated; set request.jwt.claim.sub='11111111-1111-4111-8111-111111111111'`);
+    const snapshot = { clients: [{ id: 1, name: "Cliente" }], invoiceIssuers: [{ id: "issuer" }], quotes: [], invoices: [{ id: 1, number: "PB-010", issuerId: "issuer", clientId: 1, amount: 96.8, currency: "EUR", openingPaid: 0, payments: [], issueDate: "2026-09-01", dueDate: "2026-09-16" }] };
+    const save = (s, rev) => db.query("select public.alihen_save_account($1::jsonb,$2::bigint) as revision", [JSON.stringify(s), rev]);
+    assert.equal((await save(snapshot, null)).rows[0].revision, 1);
+    const loaded = (await db.query("select public.alihen_load_account() as account")).rows[0].account;
+    assert.equal(loaded.snapshot.invoices[0].number, "PB-010");
+    assert.equal(loaded.revision, 1);
+    await assert.rejects(save(snapshot, null), /ALIHEN_CONFLICT/);
+    const partial = structuredClone(snapshot);
+    partial.invoices[0].payments.push({ id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", amount: 50, date: "2026-09-20", note: "Transferencia" });
+    assert.equal((await save(partial, 1)).rows[0].revision, 2);
+    const state = (await db.query("select * from public.alihen_collection_status")).rows[0];
+    assert.equal(Number(state.balance), 46.8);
+    assert.equal(state.payment_status, "partial");
+    assert.equal(state.overdue, true);
+    const overpaid = structuredClone(partial);
+    overpaid.invoices[0].payments[0].amount = 100;
+    await assert.rejects(save(overpaid, 2), /Payments exceed total/);
+    const subcent = structuredClone(partial);
+    subcent.invoices[0].payments[0].amount = 50.001;
+    await assert.rejects(save(subcent, 2), /Payment amounts must use cents/);
+    const future = structuredClone(partial);
+    future.invoices[0].payments[0].date = "2999-01-01";
+    await assert.rejects(save(future, 2), /Future payment date/);
+    assert.equal((await db.query("select public.alihen_load_account() as account")).rows[0].account.revision, 2);
+    const duplicate = structuredClone(partial);
+    duplicate.invoices.push({ ...duplicate.invoices[0], id: 2, payments: [], number: " pb-010 " });
+    await assert.rejects(save(duplicate, 2), /duplicate key/);
+    await assert.rejects(db.query("insert into public.alihen_payments values('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb','11111111-1111-4111-8111-111111111111',1,'2026-09-01',1,'')"), /permission denied/);
+    const docId = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
+    const path = `11111111-1111-4111-8111-111111111111/${docId}.pdf`;
+    await db.query("insert into storage.objects(bucket_id,name) values('alihen-invoices',$1)", [path]);
+    await db.query("insert into public.alihen_documents(id,owner_id,storage_path,filename,sha256) values($1,'11111111-1111-4111-8111-111111111111',$2,'test.pdf',$3)", [docId,path,"a".repeat(64)]);
+    await assert.rejects(db.query("update public.alihen_documents set state='reviewed' where id=$1", [docId]), /permission denied/);
+    const documented = structuredClone(partial);
+    Object.assign(documented.invoices[0], { documentId: docId, documentHash: "a".repeat(64) });
+    await save(documented, 2);
+    assert.equal((await db.query("select state from public.alihen_documents")).rows[0].state, "reviewed");
+    await assert.rejects(save({ ...documented, invoices: [] }, 3), /Use cancellation/);
+    await db.exec("set request.jwt.claim.sub='22222222-2222-4222-8222-222222222222'");
+    assert.equal((await db.query("select * from public.alihen_invoices")).rows.length, 0);
+    assert.equal((await db.query("select * from public.alihen_payments")).rows.length, 0);
+    assert.equal((await db.query("select * from public.alihen_documents")).rows.length, 0);
+    assert.equal((await db.query("select * from storage.objects")).rows.length, 0);
+    assert.equal((await db.query("select public.alihen_load_account() as account")).rows[0].account, null);
+    const own = structuredClone(snapshot); own.invoices[0].number = "OTHER";
+    const foreignDoc = structuredClone(own);
+    Object.assign(foreignDoc.invoices[0], { documentId: docId, documentHash: "a".repeat(64) });
+    await assert.rejects(save(foreignDoc, null), /Invalid document/);
+    await save(own, null);
+    assert.equal((await db.query("select number from public.alihen_invoices")).rows[0].number, "OTHER");
+    await db.exec("set role anon; set request.jwt.claim.sub=''");
+    await assert.rejects(db.query("select public.alihen_load_account()"), /permission denied/);
+  } finally { await db.close(); }
+});

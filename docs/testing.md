@@ -1,83 +1,13 @@
-# Estrategia de testing
+# Validación
 
-<!-- Documento vivo. Actualizar cuando cambie el stack o las convenciones de testing.
-     Los cambios deben registrarse también en changelog/. -->
+pnpm test: reglas de cobro, revisión de datos, lectura local y migración real en PostgreSQL local (PGlite). La Edge Function se ejecuta con Auth/Storage/OpenAI simulados para comprobar permisos, integridad, concurrencia y errores sin llamadas de pago.
 
----
+pnpm test:e2e: Playwright con pagos, persistencia, anulaciones, HTML no confiable e integración Supabase simulada. Requiere variables públicas en .env.local para los casos de nube. ALIHEN_SAMPLE_DIR activa las tres pruebas de PDF privados aportados; sin ese directorio se omiten explícitamente. CHROMIUM_PATH permite utilizar un navegador ya instalado.
 
-## Filosofía
+pnpm build genera producción. Después de cambios en empaquetado, comprobar el comportamiento con pnpm preview y los enlaces estáticos.
 
-<!-- Describe el enfoque de testing del proyecto.
-     Ejemplo: "Priorizamos tests de integración sobre unitarios porque nuestro valor
-     está en los flujos completos, no en funciones aisladas."
-     o: "Seguimos la pirámide clásica: muchos unitarios, integración selectiva, pocos e2e." -->
+Pendiente: la red del entorno bloqueó ALIHEN y no hay acceso administrativo disponible. No se han aplicado tablas ni desplegado función, ni realizado una llamada real a GPT. Falta configurar GPT_API_KEY en Supabase. Las pruebas simuladas no validan los servicios externos. Los tres ejemplos son PDF digitales; aún falta probar un escaneado real.
 
----
+Después de activar servicios, seguir el smoke test de PONER_EN_MARCHA.md: extracción, guardado, recarga, pago parcial/completo y aislamiento entre usuarios.
 
-## Stack de testing
-
-<!-- Herramientas utilizadas por tipo de test.
-     Ejemplo:
-     | Tipo | Herramienta |
-     |------|-------------|
-     | Unitario | Vitest |
-     | Integración | Vitest + Testing Library |
-     | E2E | Playwright | -->
-
-| Tipo | Herramienta |
-|------|-------------|
-| Unitario | <!-- --> |
-| Integración | <!-- --> |
-| E2E | <!-- --> |
-
----
-
-## Qué testear
-
-<!-- Distingue explícitamente qué merece test y qué no, para no perder tiempo.
-     Ejemplo:
-     SÍ → lógica de negocio, transformaciones de datos, componentes con estado complejo
-     NO → componentes puramente visuales, integraciones con terceros (mockear en su lugar) -->
-
-### Sí testear
-- <!-- -->
-
-### No testear (o mockear)
-- <!-- -->
-
----
-
-## Convenciones
-
-<!-- Naming, ubicación de archivos, estructura interna de los tests.
-     Ejemplo:
-     - Archivos: `nombre.test.ts` junto al archivo que testa
-     - Describe en presente: "calcula el total con descuento"
-     - Un assert por test cuando sea posible -->
-
----
-
-## Cobertura objetivo
-
-<!-- Porcentaje objetivo y cómo medirlo.
-     Ejemplo: ≥ 80% en lógica de negocio. Ignorar archivos de configuración y tipos. -->
-
----
-
-## Cómo correr los tests
-
-```bash
-# Todos los tests
-pnpm test
-
-# Modo watch
-pnpm test:watch
-
-# Con cobertura
-pnpm test:coverage
-
-# E2E
-pnpm test:e2e
-```
-
-<!-- Ajusta los comandos al stack elegido una vez relleno architecture.md. -->
+Resultado de esta sesión: 24 pruebas de reglas/SQL/extracción y 8 pruebas de navegador pasadas, incluidas las tres facturas privadas. Compilación de producción correcta. Servicios externos pendientes como se indica arriba.

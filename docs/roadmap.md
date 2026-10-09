@@ -1,45 +1,13 @@
 # Roadmap
 
-<!-- Planificación de fases de desarrollo. No es un calendario con fechas exactas,
-     sino una guía de prioridades.
-     Actualizar cuando algo pase de una fase a otra, o cuando se redefinan las prioridades. -->
+- [x] Integrar aplicación recibida.
+- [x] Importación y revisión de PDF digitales.
+- [x] Cobros parciales, saldos y alertas.
+- [x] Cliente Supabase, migración y función GPT preparados.
+- [x] Pruebas locales con los PDF aportados.
+- [ ] Aplicar migración y desplegar función en ALIHEN.
+- [ ] Configurar secreto GPT y validar extracción real.
+- [ ] Publicar web y validar persistencia/aislamiento reales.
+- [ ] Probar una factura escaneada real.
 
----
-
-## Fase 1 — MVP
-
-<!-- Funcionalidades mínimas para validar que el producto tiene sentido.
-     El criterio: ¿qué necesita existir para que un usuario real lo use y lo encuentre útil?
-     
-     - [ ] ... -->
-
-**Objetivo de validación:** <!-- Qué quieres haber aprendido al terminar esta fase -->
-
----
-
-## Fase 2 — Mejora sobre validación
-
-<!-- Mejoras basadas en el feedback real de la Fase 1.
-     No planificar esto en detalle hasta haber terminado la Fase 1.
-     
-     - [ ] ... -->
-
----
-
-## Fase 3 — Escalado
-
-<!-- Funcionalidades de crecimiento, rendimiento o monetización avanzada.
-     Solo relevante si el producto ha validado su mercado.
-     
-     - [ ] ... -->
-
----
-
-## Descartado (con motivo)
-
-<!-- Funcionalidades que se han considerado y descartado explícitamente.
-     Registrarlas evita reabrir debates.
-     
-     | Funcionalidad | Motivo del descarte |
-     |---------------|---------------------|
-     | ... | ... | -->
+Correos y conciliación quedan para una fase posterior, con definición y autorización separadas.

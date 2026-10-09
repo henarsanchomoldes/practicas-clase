@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="no-store" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>AliHen</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Navegacion principal">
+        <div class="brand">
+          <img class="brand-logo" src="assets/Logo%20AliHen.pdf.png" alt="AliHen" />
+          <div>
+            <strong>AliHen</strong>
+            <span>Presupuestos y cobros</span>
+          </div>
+        </div>
+        <nav class="nav-list">
+          <button class="nav-item active" data-view="dashboard" type="button">Panel</button>
+          <button class="nav-item" data-view="clients" type="button">Clientes</button>
+          <button class="nav-item" data-view="rates" type="button">Tarifario</button>
+          <button class="nav-item" data-view="quotes" type="button">Presupuestos</button>
+          <button class="nav-item" data-view="new-invoice" type="button">Factura nueva</button>
+          <button class="nav-item" data-view="fee-invoice" type="button">Factura con FEE</button>
+          <button class="nav-item" data-view="invoices" type="button">Facturas</button>
+          <button class="nav-item" data-view="payments" type="button">Cobros</button>
+          <button class="nav-item" data-view="business" type="button">Empresa</button>
+        </nav>
+      </aside>
+
+      <main class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Seguimiento de cobros</p>
+            <h1 id="view-title">Panel</h1>
+          </div>
+          <div class="topbar-actions">
+            <button class="ghost-button" id="print-summary" type="button">Imprimir resumen</button>
+            <button class="primary-button" data-view="quotes" type="button">Nuevo presupuesto</button>
+          </div>
+        </header>
+
+        <p id="collection-message" class="notice" role="status">Tus datos se guardan en este navegador hasta que conectes ALIHEN.</p>
+        <section class="view active" id="dashboard">
+          <div class="metrics-grid" id="metrics"></div>
+          <section class="business-strip" id="business-strip"></section>
+          <section class="panel collection-alerts" id="collection-alerts" aria-live="polite"></section>
+          <div class="split-layout">
+            <section class="panel">
+              <div class="panel-heading">
+                <h2>Facturas pendientes</h2>
+                <span id="pending-count"></span>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Factura</th>
+                      <th>Cliente</th>
+                      <th>Vence</th>
+                      <th>Importe</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody id="pending-table"></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-heading">
+                <h2>Presupuestos activos</h2>
+                <span id="quote-count"></span>
+              </div>
+              <div class="activity-list" id="quote-list"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" id="clients">
+          <div class="section-header">
+            <div>
+              <h2>Clientes</h2>
+              <p>Ficha completa para presupuestos, facturas y seguimiento.</p>
+            </div>
+            <button class="ghost-button" id="reset-client-form" type="button">Nuevo cliente</button>
+          </div>
+          <div class="clients-layout">
+            <form class="panel form-panel client-form" id="client-form">
+              <input id="client-id" type="hidden" />
+              <h3 id="client-form-title">Nuevo cliente</h3>
+              <div class="form-row">
+                <label>
+                  Nombre comercial
+                  <input id="client-name" autocomplete="organization" required />
+                </label>
+                <label>
+                  Razón social
+                  <input id="client-fiscal-name" autocomplete="organization" />
+                </label>
+              </div>
+              <div class="form-row">
+                <label>
+                  NIF / CIF
+                  <input id="client-tax-id" />
+                </label>
+                <label>
+                  Persona de contacto
+                  <input id="client-contact" autocomplete="name" />
+                </label>
+              </div>
+              <div class="form-row">
+                <label>
+                  Cargo / area
+                  <input id="client-contact-role" />
+                </label>
+                <label>
+                  Teléfono
+                  <input id="client-phone" autocomplete="tel" />
+                </label>
+              </div>
+              <label>
+                Email de facturación
+                <input id="client-email" autocomplete="email" type="email" />
+              </label>
+              <label>
+                Dirección fiscal
+                <input id="client-address" autocomplete="street-address" />
+              </label>
+              <div class="form-row">
+                <label>
+                  Código postal
+                  <input id="client-postal-code" autocomplete="postal-code" />
+                </label>
+                <label>
+                  Ciudad
+                  <input id="client-city" autocomplete="address-level2" />
+                </label>
+              </div>
+              <div class="form-row">
+                <label>
+                  Provincia
+                  <input id="client-province" autocomplete="address-level1" />
+                </label>
+                <label>
+                  País
+                  <input id="client-country" autocomplete="country-name" value="España" />
+                </label>
+              </div>
+              <div class="form-row">
+                <label>
+                  Plazo de pago
+                  <input id="client-payment-terms" min="0" type="number" value="30" />
+                </label>
+                <label>
+                  Método de pago
+                  <input id="client-payment-method" value="Transferencia" />
+                </label>
+              </div>
+              <label>
+                Notas internas
+                <textarea id="client-notes" rows="4" placeholder="OC, condiciones, preferencias, recordatorios..."></textarea>
+              </label>
+              <div class="form-actions">
+                <button class="primary-button" type="submit">Guardar cliente</button>
+                <button class="ghost-button" id="cancel-client-edit" type="button">Limpiar</button>
+                <button class="ghost-button danger-action" id="delete-current-client" type="button" hidden>Eliminar cliente</button>
+              </div>
+            </form>
+
+            <section class="panel">
+              <div class="panel-heading">
+                <h2>Listado</h2>
+                <span id="clients-total"></span>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Cliente</th>
+                      <th>Fiscal</th>
+                      <th>Contacto</th>
+                      <th>Email</th>
+                      <th>Facturado</th>
+                      <th>Pendiente</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="clients-table"></tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" id="rates">
+          <div class="section-header">
+            <div>
+              <h2>Tarifario</h2>
+              <p>Servicios importados desde Tarifario H_S JUN26.</p>
+            </div>
+            <button class="primary-button" id="add-rate" type="button">Nuevo servicio</button>
+          </div>
+          <div class="rate-grid" id="rate-grid"></div>
+        </section>
+
+        <section class="view" id="quotes">
+          <div class="section-header">
+            <div>
+              <h2>Presupuestos</h2>
+              <p>Carga presupuestos ya hechos y controla su estado.</p>
+            </div>
+          </div>
+          <div class="two-column">
+            <form class="panel form-panel" id="quote-form">
+              <h3>Cargar presupuesto</h3>
+              <label>
+                Cliente
+                <select id="quote-client"></select>
+              </label>
+              <div class="form-row">
+                <label>
+                  Número
+                  <input id="quote-number" placeholder="Ej. PRESU-001" />
+                </label>
+                <label>
+                  Importe base
+                  <input id="quote-amount" min="0" step="0.01" type="number" placeholder="0,00" />
+                </label>
+              </div>
+              <label>
+                Estado
+                <select id="quote-status">
+                  <option value="sent">Presentado</option>
+                  <option value="accepted">Aceptado</option>
+                  <option value="rejected">No aceptado</option>
+                </select>
+              </label>
+              <label>
+                Archivo del presupuesto
+                <input id="quote-file" accept=".pdf,.jpg,.jpeg,.png" type="file" />
+              </label>
+              <label>
+                Notas
+                <textarea id="quote-notes" rows="4" placeholder="Campaña, OC, condiciones, cambios o enlace interno"></textarea>
+              </label>
+              <button class="primary-button" type="submit">Guardar presupuesto</button>
+            </form>
+            <section class="panel">
+              <div class="panel-heading">
+                <h2>Listado</h2>
+                <span id="quotes-total"></span>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Número</th>
+                      <th>Cliente</th>
+                      <th>Total / pendiente</th>
+                      <th>Estado</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="quotes-table"></tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" id="new-invoice">
+          <div class="section-header"><div><h2>Factura nueva</h2><p>Introduce el trabajo y su importe. Puedes completar los datos fiscales del cliente más adelante.</p></div></div>
+          <form class="panel form-panel" id="simple-invoice-form">
+            <input id="simple-editing-id" type="hidden" />
+            <h3 id="simple-invoice-title">Nueva factura</h3>
+            <div class="form-row">
+              <label>Cliente<select id="simple-client" required></select></label>
+              <label>Emisor<select id="simple-issuer" required></select></label>
+            </div>
+            <label id="simple-new-client-label" hidden>Nombre del nuevo cliente<input id="simple-new-client" placeholder="Nombre del cliente o empresa" /></label>
+            <p class="invoice-help">¿Aún no tienes sus datos fiscales? Elige «Nuevo cliente». Después podrás añadirlos en la pestaña Clientes.</p>
+            <div class="form-row">
+              <label>Número<input id="simple-number" placeholder="Automático" /></label>
+              <label>Estado<input id="simple-status" type="hidden" value="pending" /><span>El estado se calcula con los cobros y el vencimiento.</span></label>
+            </div>
+            <div class="form-row">
+              <label>Fecha<input id="simple-issue-date" type="date" required /></label>
+              <label>Vencimiento<input id="simple-due-date" type="date" required /></label>
+            </div>
+            <div class="panel-heading compact-heading"><h3>Trabajos</h3><button class="ghost-button" id="add-simple-line" type="button">Añadir trabajo</button></div>
+            <div id="simple-lines"></div>
+            <p class="invoice-help">Introduce el importe antes de IVA. Se aplicará el IVA configurado para el emisor.</p>
+            <p id="simple-total" aria-live="polite"></p>
+            <label>Notas<textarea id="simple-notes" rows="3" placeholder="OC, periodo o comentarios"></textarea></label>
+            <div class="form-actions"><button class="primary-button" id="save-simple-invoice" type="submit">Crear factura</button><button class="ghost-button" id="reset-simple-invoice" type="button">Limpiar</button></div>
+          </form>
+        </section>
+        <section class="view" id="fee-invoice">
+          <div class="section-header"><div><h2>Factura con FEE</h2><p>Calcula el fee mensual y las horas extras para La Caseta u otros clientes.</p></div></div>
+            <form class="panel form-panel" id="manual-invoice-form">
+              <input id="editing-invoice-id" type="hidden" />
+              <h3 id="manual-invoice-title">Nueva factura con FEE</h3>
+              <div class="form-row">
+                <label>
+                  Cliente
+                  <select id="invoice-client"></select>
+                </label>
+                <label>
+                  Emisor
+                  <select id="invoice-issuer"></select>
+                </label>
+              </div>
+              <div class="form-row">
+                <label>
+                  Número
+                  <input id="invoice-number" placeholder="Automático" />
+                </label>
+              </div>
+              <div class="form-row">
+                <label>
+                  Fecha
+                  <input id="invoice-issue-date" type="date" />
+                </label>
+                <label>
+                  Vencimiento
+                  <input id="invoice-due-date" type="date" />
+                </label>
+              </div>
+              <div class="form-row">
+                <label>
+                  Mes facturado
+                  <input id="invoice-billing-month" type="month" />
+                </label>
+                <label>
+                  Fee mensual
+                  <input id="invoice-fee-description" value="Fee mensual" />
+                </label>
+              </div>
+              <div class="form-row">
+                <label>
+                  Fee mensual total
+                  <input id="invoice-monthly-fee" min="0" step="0.01" type="number" value="1500" />
+                </label>
+                <label>
+                  Días hábiles del mes
+                  <input id="invoice-month-days" min="1" step="1" type="number" value="31" />
+                </label>
+              </div>
+              <div class="form-row">
+                <label>
+                  Días trabajados
+                  <input id="invoice-work-days" min="0" step="0.5" type="number" value="0" />
+                </label>
+              </div>
+              <div class="form-row">
+                <label>
+                  Importe fee calculado
+                  <input id="invoice-fee-amount" min="0" step="0.01" type="number" value="0" />
+                </label>
+                <label>
+                  Estado
+                  <input id="invoice-status" type="hidden" value="pending" /><span>El estado se calcula con los cobros y el vencimiento.</span>
+                </label>
+              </div>
+              <section class="extra-hours-box">
+                <div class="panel-heading compact-heading">
+                  <h3>Horas extras</h3>
+                  <button class="ghost-button" id="add-extra-line" type="button">Añadir línea</button>
+                </div>
+                <div class="extra-lines" id="extra-lines"></div>
+              </section>
+              <label>
+                Notas
+                <textarea id="invoice-notes" rows="3" placeholder="Periodo, OC, comentarios o detalle interno"></textarea>
+              </label>
+              <div class="form-actions">
+                <button class="primary-button" id="save-invoice-button" type="submit">Crear factura</button>
+                <button class="ghost-button" id="reset-invoice-form" type="button">Limpiar</button>
+              </div>
+            </form>
+        </section>
+
+        <section class="view" id="invoices">
+          <div class="section-header">
+            <div>
+              <h2>Facturas</h2>
+              <p>Consulta, edita y controla emisión, vencimiento y cobro.</p>
+            </div>
+          </div>
+          <div class="collection-toolbar">
+            <button id="import-pdf-button" class="primary-button" type="button">Importar factura PDF</button>
+            <input id="invoice-pdf" type="file" accept="application/pdf,.pdf" hidden />
+            <label>Buscar<input id="invoice-search" type="search" placeholder="Número o cliente" /></label>
+            <label>Estado<select id="invoice-filter"><option value="all">Todas</option><option value="pending">Pendientes</option><option value="partial">Con pagos parciales</option><option value="overdue">Vencidas</option><option value="paid">Pagadas</option><option value="cancelled">Anuladas</option></select></label>
+          </div>
+          <section id="invoice-review" class="panel invoice-review" hidden>
+            <div class="panel-heading"><h2>Revisar factura importada</h2><button id="review-cancel" class="ghost-button" type="button">Cerrar revisión</button></div>
+            <p id="review-warnings" class="notice"></p>
+            <div class="review-layout">
+              <iframe id="pdf-preview" title="PDF original de la factura"></iframe>
+              <form id="review-form">
+                <button id="review-gpt" class="ghost-button" type="button">Extraer con GPT</button>
+                <p class="muted">La extracción con GPT envía este documento a OpenAI. Revisa siempre el resultado antes de guardar.</p>
+                <div class="review-fields">
+                  <label>Número<input id="review-number" required maxlength="100" /></label>
+                  <label>Moneda<input id="review-currency" required maxlength="3" placeholder="EUR" /></label>
+                  <label>Emisor<input id="review-issuerName" required /></label>
+                  <label>NIF emisor<input id="review-issuerTaxId" /></label>
+                  <label>Cliente<input id="review-clientName" required /></label>
+                  <label>NIF cliente<input id="review-clientTaxId" /></label>
+                  <label>Emisión<input id="review-issueDate" type="date" required /></label>
+                  <label>Vencimiento<input id="review-dueDate" type="date" required /></label>
+                  <label>Base imponible<input id="review-subtotal" type="number" min="0" step="0.01" required /></label>
+                  <label>Impuestos<input id="review-taxAmount" type="number" min="0" step="0.01" required /></label>
+                  <label>Retención<input id="review-retentionAmount" type="number" min="0" step="0.01" required /></label>
+                  <label>Total a cobrar<input id="review-total" type="number" min="0.01" step="0.01" required /></label>
+                </div>
+                <label>Conceptos (descripción | cantidad | precio unitario)<textarea id="review-lines" rows="5" placeholder="Diseño de cartel | 1 | 80.00"></textarea></label>
+                <label>Notas<textarea id="review-notes" rows="2"></textarea></label>
+                <p id="review-errors" class="error" role="alert"></p>
+                <button id="review-save" class="primary-button" type="submit">Confirmar y guardar factura</button>
+              </form>
+            </div>
+          </section>
+          <div class="two-column">
+            <section class="panel">
+              <div class="panel-heading">
+                <h2>Listado</h2>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Factura</th>
+                      <th>Cliente</th>
+                      <th>Fecha</th>
+                      <th>Vencimiento</th>
+                      <th>Total / pendiente</th>
+                      <th>Estado</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="invoices-table"></tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" id="payments">
+          <div class="section-header">
+            <div>
+              <h2>Seguimiento de cobros</h2>
+              <p>Prioriza cobros pendientes y vencidos.</p>
+            </div>
+          </div>
+          <div class="payment-lanes" id="payment-lanes"></div>
+        </section>
+
+        <section class="view" id="business">
+          <div class="section-header">
+            <div>
+              <h2>Empresa y plantillas</h2>
+              <p>Datos fiscales, condiciones de pago y documentos base.</p>
+            </div>
+            <div class="topbar-actions">
+              <button class="ghost-button" id="import-backup" type="button">Importar copia</button>
+              <button class="primary-button" id="export-backup" type="button">Exportar copia</button>
+              <input id="backup-file" type="file" accept="application/json,.json" hidden />
+            </div>
+          </div>
+          <section class="panel cloud-panel">
+            <div class="panel-heading"><h2>Conexión con ALIHEN</h2><span id="cloud-status" role="status"></span></div>
+            <p id="cloud-identity"></p>
+            <p id="cloud-help" class="notice">La conexión con ALIHEN todavía no está configurada. Puedes trabajar localmente y exportar una copia.</p>
+            <form id="cloud-login" class="collection-toolbar" hidden>
+              <label>Email<input id="cloud-email" type="email" autocomplete="username" required /></label>
+              <label>Contraseña<input id="cloud-password" type="password" autocomplete="current-password" required /></label>
+              <button class="primary-button" type="submit">Iniciar sesión</button>
+            </form>
+            <div class="collection-toolbar">
+              <button id="cloud-migrate" class="primary-button" type="button" hidden>Importar esta copia a ALIHEN</button>
+              <button id="cloud-load" class="ghost-button" type="button" hidden>Recargar desde ALIHEN</button>
+              <button id="cloud-retry" class="primary-button" type="button" hidden>Reintentar guardado</button>
+              <button id="cloud-logout" class="ghost-button" type="button" hidden>Cerrar sesión</button>
+            </div>
+          </section>
+          <div class="business-grid">
+            <section class="panel company-panel">
+              <div id="business-data"></div>
+            </section>
+            <section class="panel">
+              <div class="panel-heading">
+                <h2>Documentos conectados</h2>
+              </div>
+              <div class="document-list" id="document-list"></div>
+            </section>
+            <section class="panel issuer-panel">
+              <div class="panel-heading">
+                <h2>Emisores de factura</h2>
+              </div>
+              <form class="issuer-form" id="issuer-form">
+                <input id="issuer-id" type="hidden" />
+                <div class="form-row">
+                  <label>
+                    Nombre corto
+                    <input id="issuer-label" placeholder="Ej. Henar autónoma" />
+                  </label>
+                  <label>
+                    Razón social / Nombre fiscal
+                    <input id="issuer-fiscal-name" placeholder="Tu nombre fiscal" />
+                  </label>
+                </div>
+                <div class="form-row">
+                  <label>
+                    NIF
+                    <input id="issuer-tax-id" placeholder="Pendiente" />
+                  </label>
+                  <label>
+                    Email facturación
+                    <input id="issuer-email" type="email" />
+                  </label>
+                </div>
+                <label>
+                  Dirección fiscal
+                  <input id="issuer-address" placeholder="Calle, CP, ciudad" />
+                </label>
+                <div class="form-row">
+                  <label>
+                    Teléfono
+                    <input id="issuer-phone" />
+                  </label>
+                  <label>
+                    Banco
+                    <input id="issuer-bank" />
+                  </label>
+                </div>
+                <label>
+                  IBAN
+                  <input id="issuer-iban" />
+                </label>
+                <div class="form-row">
+                  <label>
+                    IVA
+                    <input id="issuer-vat" min="0" step="1" type="number" value="21" />
+                  </label>
+                  <label>
+                    Pago factura
+                    <input id="issuer-payment-terms" min="0" step="1" type="number" value="15" />
+                  </label>
+                </div>
+                <label class="check-row">
+                  <input id="issuer-active" type="checkbox" />
+                  Usar como emisor por defecto en facturas nuevas
+                </label>
+                <label>
+                  Notas internas
+                  <textarea id="issuer-notes" rows="3" placeholder="Estado del alta, gestor, condiciones..."></textarea>
+                </label>
+                <div class="form-actions">
+                  <button class="primary-button" type="submit">Guardar emisor</button>
+                  <button class="ghost-button" id="reset-issuer-form" type="button">Limpiar</button>
+                </div>
+              </form>
+              <div class="issuer-list" id="issuer-list"></div>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div class="document-modal" id="document-modal" hidden>
+      <div class="document-backdrop" data-close-document></div>
+      <section class="document-dialog" aria-modal="true" role="dialog" aria-label="Documento">
+        <header class="document-toolbar">
+          <strong id="document-modal-title">Documento</strong>
+          <div class="document-actions">
+            <a class="ghost-button" id="email-document" href="#">Preparar email</a>
+            <button class="primary-button" id="print-document" type="button">Imprimir / PDF</button>
+            <button class="ghost-button" data-close-document type="button">Cerrar</button>
+          </div>
+        </header>
+        <div class="document-paper" id="document-paper"></div>
+      </section>
+    </div>
+
+    <dialog id="payment-dialog" class="collection-dialog" aria-labelledby="payment-title">
+      <div class="panel-heading"><h2 id="payment-title">Cobros</h2><button id="payment-close" class="ghost-button" type="button">Cerrar</button></div>
+      <p id="payment-summary"></p>
+      <div id="payment-history"></div>
+      <form id="payment-form">
+        <div class="review-fields">
+          <label>Fecha del cobro<input id="payment-date" type="date" required /></label>
+          <label>Importe cobrado<input id="payment-amount" type="number" min="0.01" step="0.01" required /></label>
+        </div>
+        <label>Referencia o nota<input id="payment-note" maxlength="500" /></label>
+        <button class="primary-button" type="submit">Registrar cobro</button>
+      </form>
+      <p id="payment-error" class="error" role="alert"></p>
+      <div class="collection-toolbar">
+        <button id="payment-original" class="ghost-button" type="button" hidden>Abrir PDF original</button>
+        <button id="payment-cancel-invoice" class="ghost-button danger-action" type="button">Anular factura</button>
+      </div>
+    </dialog>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
