@@ -1067,6 +1067,7 @@ function renderInvoices() {
         <button class="table-action" data-edit-invoice="${invoice.id}" type="button">Editar</button>
         <button class="table-action" data-open-invoice="${invoice.id}" type="button">Ver</button>
         <button class="table-action" data-payment="${invoice.id}" type="button">Cobros</button>
+        ${collection(invoice).balance > 0 && !invoice.cancelled ? `<button class="table-action" data-mark-paid="${invoice.id}" type="button">Marcar pagada</button>` : ""}
         ${collection(invoice).paid === 0 && !invoice.documentId ? `<button class="table-action danger-action" data-delete-invoice="${invoice.id}" type="button">Eliminar</button>` : ""}
       </td>
     </tr>

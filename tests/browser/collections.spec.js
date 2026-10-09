@@ -1,5 +1,38 @@
 import { test, expect } from "@playwright/test";
 import { join } from "node:path";
+import { readFileSync } from "node:fs";
+
+test("Copia antigua real conserva pagadas, totales y tres vencidas; acceso rápido al cobro", async ({ page }) => {
+  test.skip(!process.env.ALIHEN_BACKUP_FILE, "Necesita la copia privada, fuera del repositorio.");
+  const backup = JSON.parse(readFileSync(process.env.ALIHEN_BACKUP_FILE, "utf8"));
+  await page.clock.install({ time: new Date("2026-10-09T12:00:00Z") });
+  await page.goto("/");
+  page.on("dialog", (dialog) => dialog.accept());
+  await page.locator('[data-view="business"]').click();
+  await page.locator("#backup-file").setInputFiles(process.env.ALIHEN_BACKUP_FILE);
+  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem("alihen-invoices")).length)).toBe(19);
+  await page.locator('[data-view="dashboard"]').click();
+  await expect(page.locator("#metrics")).toContainText("19.668,02");
+  await expect(page.locator("#metrics")).toContainText("13.312,93");
+  await expect(page.locator("#metrics")).toContainText("6.355,09");
+  await expect(page.locator("#collection-alerts [data-payment]")).toHaveCount(3);
+  for (const number of ["PB-010", "PB-009", "PB-007"]) await expect(page.locator("#collection-alerts")).toContainText(number);
+  await page.locator('[data-view="invoices"]').click();
+  await expect(page.locator("#invoices-table tr")).toHaveCount(backup.invoices.length);
+  await expect(page.locator("#invoices-table [data-mark-paid]")).toHaveCount(6);
+  await page.locator("#invoice-search").fill("PB-010");
+  await page.locator("[data-mark-paid]").click();
+  await expect(page.locator("#payment-amount")).toHaveValue("96.80");
+  await page.locator("#payment-date").fill("2026-10-08");
+  await page.getByRole("button", { name: "Registrar cobro", exact: true }).click();
+  await expect(page.locator("#payment-summary")).toContainText("Pagada");
+  await page.locator("#payment-close").click();
+  await page.reload();
+  await expect(page.locator("#collection-alerts [data-payment]")).toHaveCount(2);
+  const stored = await page.evaluate(() => JSON.parse(localStorage.getItem("alihen-invoices")));
+  expect(stored.filter((i) => i.openingPaid > 0)).toHaveLength(13);
+  expect(stored.find((i) => i.number === "PB-010").payments[0].date).toBe("2026-10-08");
+});
 
 test("Pagos parciales, filtros, alertas y persistencia al recargar", async ({ page }) => {
   const errors = [];

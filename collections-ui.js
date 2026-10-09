@@ -328,6 +328,12 @@ export function initializeCollections(api) {
     } catch(e) { tab?.close(); $("payment-error").textContent = e.message; }
   });
   document.addEventListener("click", (event) => {
+    const markPaid = event.target.closest("[data-mark-paid]");
+    if (markPaid) {
+      event.stopPropagation();
+      openPayment(markPaid.dataset.markPaid);
+      $("payment-date").focus();
+    }
     const payment = event.target.closest("[data-payment]");
     if (payment) { event.stopPropagation(); openPayment(payment.dataset.payment); }
     const remove = event.target.closest("[data-remove-payment]");

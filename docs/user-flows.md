@@ -7,3 +7,5 @@ Cobrar: factura/alerta → Cobros → fecha e importe → registrar → recalcul
 Migrar: exportar JSON en el gestor original → importar en la nueva web → iniciar sesión → importar copia a cuenta vacía con confirmación. No sobrescribir una cuenta existente. Cerrar sesión vuelve a la copia local.
 
 Fallos: aviso de cambios sin guardar, copia local conservada y opción de reintentar/exportar. Si cambió otra sesión, impedir sobrescritura y conservar copia antes de recargar.
+
+Acceso rápido: Facturas → Marcar pagada → confirmar fecha y Registrar cobro. El importe se prellena con el saldo restante; se permite indicar la fecha real sin inventar cuándo se cobró. Las marcas pagadas del gestor anterior se conservan como cobros históricos sin fecha.
